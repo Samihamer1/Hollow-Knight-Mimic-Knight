@@ -9,7 +9,7 @@ namespace PVCosplay
     public class PVCosplay : Mod
     {
         new public string GetName() => "PureVesselCosplay";
-        public override string GetVersion() => "v1.1";
+        public override string GetVersion() => "v1.2";
 
         public static bool isFacingLeft;
         public static GameObject hkprime;
@@ -32,7 +32,6 @@ namespace PVCosplay
             On.HeroController.Move += FindDirection;
             hkprime = preloadedObjects["GG_Hollow_Knight"]["Battle Scene/HK Prime"];
             UnityEngine.Object.DontDestroyOnLoad(hkprime);
-            //Modding.Logger.Log("hk = " + hkprime);
             hkfsm = hkprime.LocateMyFSM("Control");
            
             dagger = hkfsm.GetAction<HutongGames.PlayMaker.Actions.FlingObjectsFromGlobalPoolTime>("SmallShot LowHigh", 2).gameObject.Value;

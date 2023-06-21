@@ -36,7 +36,7 @@ namespace PVCosplay
             clone = Instantiate(PVCosplay.dagger);
             Destroy(clone.GetComponent<DamageHero>());
             Destroy(clone.GetComponent<Rigidbody2D>());
-            //Destroy(clone.GetComponent<BoxCollider2D>());
+            
             Destroy(clone.GetComponent<FaceAngleSimple>());
             clone.layer = (int)PhysLayers.HERO_ATTACK;
             
@@ -51,22 +51,30 @@ namespace PVCosplay
             dmg.enabled = true;
             dmg.specialType = SpecialTypes.None;
 
+            if (HeroController.instance.playerData.equippedCharm_19)
+            {
+                clone.transform.localScale += new Vector3((float)0.4,(float)0.4);
+                dmg.damageDealt = 50;
+            }
+            Modding.Logger.Log(clone.transform.localScale);
             var value = (PVCosplay.isFacingLeft ? 110 : 250);
             clone.transform.rotation = Quaternion.Euler(0, 0, value + (10 * i * (PVCosplay.isFacingLeft ? -1 : 1)));
             clone.transform.position = new Vector3(HeroController.instance.transform.position.x, HeroController.instance.transform.position.y, 0);
             clone.SetActive(true);
 
-            base.StartCoroutine(Velocity(clone, i));
+            bool Left = PVCosplay.isFacingLeft;
+            float modifier = (Left ? -1 : 1);
+
+            base.StartCoroutine(Velocity(clone, i,modifier));
         }
 
-        private IEnumerator Velocity(GameObject cloneobject, int i)
+        private IEnumerator Velocity(GameObject cloneobject, int i, float modifier)
         {
             //velocity
 
             float timeElapsed = 0;
             Vector3 initialPosition = HeroController.instance.transform.position;
 
-            float modifier = (PVCosplay.isFacingLeft ? -1 : 1);
 
             float[] xvals = { 67, 75, 67, 60, 52 };
             float[] yvals = { -15, 0, 15, 30, 45 };
