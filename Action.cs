@@ -65,7 +65,7 @@ namespace PVCosplay
 
             if (HeroController.instance.playerData.equippedCharm_11)
             {
-                multiplier *= 0.35f;
+                multiplier *= 0.25f;
                 dmg.ignoreInvuln = true;
             }
 
