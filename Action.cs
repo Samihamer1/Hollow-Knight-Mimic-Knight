@@ -73,14 +73,14 @@ namespace MyFirstMod
             //velocity
 
             float timeElapsed = 0;
-            Vector3 initialPosition = clone.transform.position;
+            Vector3 initialPosition = HeroController.instance.transform.position;
 
             float modifier = (myFirstMod.isFacingLeft ? -1 : 1);
 
             float[] xvals = { 67, 75, 67, 60, 52 };
             float[] yvals = { -15, 0, 15, 30, 45 };
 
-            Vector3 endPosition = HeroController.instance.transform.position + new Vector3(xvals[i - 1] * modifier, yvals[i - 1]);
+            Vector3 endPosition = initialPosition + new Vector3(xvals[i - 1] * modifier, yvals[i - 1]);
 
             while (cloneobject)
             {
