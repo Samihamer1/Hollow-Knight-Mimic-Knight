@@ -9,7 +9,7 @@ namespace PVCosplay
     public class PVCosplay : Mod
     {
         new public string GetName() => "PureVesselCosplay";
-        public override string GetVersion() => "v1.3";
+        public override string GetVersion() => "v1.4";
 
         public static bool isFacingLeft;
         public static GameObject hkprime;

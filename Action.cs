@@ -67,6 +67,9 @@ namespace PVCosplay
             {
                 multiplier *= 0.25f;
                 dmg.ignoreInvuln = true;
+                HitCounter hitcount = clone.AddComponent<HitCounter>();
+                hitcount.ResetHits();
+
             }
 
             dmg.damageDealt = (int)Math.Ceiling(damagenumber * multiplier);
