@@ -5,6 +5,7 @@ using UnityEngine;
 using Modding.Utils;
 using HutongGames.PlayMaker;
 using Vasi;
+using System;
 
 namespace PVCosplay
 {
@@ -12,6 +13,8 @@ namespace PVCosplay
     {
 
         float lerpDuration = 2;
+        float damagenumber = 40;
+        bool Left = false;
         public GameObject clone;
         FsmState fsm;
         DamageEnemies dmg;
@@ -21,16 +24,17 @@ namespace PVCosplay
             fsm.RemoveAction(3);
             fsm.InsertMethod(3, () =>
             {
+                Left = PVCosplay.isFacingLeft;
                 for (int i = 1; i < 6; i++)
                 {
-                    base.StartCoroutine(CreateDagger(i));
+                    base.StartCoroutine(CreateDagger(i,Left));
                 }
             });
         }
 
 
 
-        private IEnumerator CreateDagger(int i)
+        private IEnumerator CreateDagger(int i, bool facingLeft)
         {
             yield return new WaitForSeconds(0.08f * i);
             clone = Instantiate(PVCosplay.dagger);
@@ -51,19 +55,28 @@ namespace PVCosplay
             dmg.enabled = true;
             dmg.specialType = SpecialTypes.None;
 
+            float multiplier = 1f;
+
             if (HeroController.instance.playerData.equippedCharm_19)
             {
-                clone.transform.localScale += new Vector3((float)0.4,(float)0.4);
-                dmg.damageDealt = 50;
+                clone.transform.localScale += new Vector3((float)0.3,(float)0.3);
+                multiplier *= 1.25f;
             }
-            Modding.Logger.Log(clone.transform.localScale);
-            var value = (PVCosplay.isFacingLeft ? 110 : 250);
-            clone.transform.rotation = Quaternion.Euler(0, 0, value + (10 * i * (PVCosplay.isFacingLeft ? -1 : 1)));
+
+            if (HeroController.instance.playerData.equippedCharm_11)
+            {
+                multiplier *= 0.35f;
+                dmg.ignoreInvuln = true;
+            }
+
+            dmg.damageDealt = (int)Math.Ceiling(damagenumber * multiplier);
+
+
+            var value = (facingLeft ? 110 : 250);
+            float modifier = (facingLeft ? -1 : 1);
+            clone.transform.rotation = Quaternion.Euler(0, 0, value + (10 * i * modifier));
             clone.transform.position = new Vector3(HeroController.instance.transform.position.x, HeroController.instance.transform.position.y, 0);
             clone.SetActive(true);
-
-            bool Left = PVCosplay.isFacingLeft;
-            float modifier = (Left ? -1 : 1);
 
             base.StartCoroutine(Velocity(clone, i,modifier));
         }
@@ -77,7 +90,7 @@ namespace PVCosplay
 
 
             float[] xvals = { 67, 75, 67, 60, 52 };
-            float[] yvals = { -15, 0, 15, 30, 45 };
+            float[] yvals = { -15, 0, 15, 30, 47 };
 
             Vector3 endPosition = initialPosition + new Vector3(xvals[i - 1] * modifier, yvals[i - 1]);
 
