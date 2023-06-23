@@ -7,9 +7,9 @@ using UnityEngine;
 
 namespace PVCosplay
 {
-    public class HitCounter: MonoBehaviour
+    public class HitCounter : MonoBehaviour
     {
-        int maxhits = 2;
+        public int maxhits = 2;
         int totalhits;
         public void OnTriggerStay2D(Collider2D collider)
         {

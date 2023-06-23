@@ -9,16 +9,17 @@ using System;
 
 namespace PVCosplay
 {
-    public class Action : MonoBehaviour
+    public class Dagger : MonoBehaviour
     {
 
         float lerpDuration = 2;
         float damagenumber = 40;
         bool Left = false;
-        public GameObject clone;
+        GameObject clone;
         FsmState fsm;
         DamageEnemies dmg;
-        private void Update()
+
+        private IEnumerator Start()
         {
             fsm = HeroController.instance.spellControl.GetState("Fireball 2");
             fsm.RemoveAction(3);
@@ -27,12 +28,11 @@ namespace PVCosplay
                 Left = PVCosplay.isFacingLeft;
                 for (int i = 1; i < 6; i++)
                 {
-                    base.StartCoroutine(CreateDagger(i,Left));
+                    StartCoroutine(CreateDagger(i, Left));
                 }
             });
+            yield return true;
         }
-
-
 
         private IEnumerator CreateDagger(int i, bool facingLeft)
         {
@@ -40,10 +40,10 @@ namespace PVCosplay
             clone = Instantiate(PVCosplay.dagger);
             Destroy(clone.GetComponent<DamageHero>());
             Destroy(clone.GetComponent<Rigidbody2D>());
-            
+
             Destroy(clone.GetComponent<FaceAngleSimple>());
             clone.layer = (int)PhysLayers.HERO_ATTACK;
-            
+
             dmg = clone.GetOrAddComponent<DamageEnemies>();
             dmg.damageDealt = 40;
             dmg.attackType = AttackTypes.Spell;
@@ -59,7 +59,7 @@ namespace PVCosplay
 
             if (HeroController.instance.playerData.equippedCharm_19)
             {
-                clone.transform.localScale += new Vector3((float)0.3,(float)0.3);
+                clone.transform.localScale += new Vector3((float)0.3, (float)0.3);
                 multiplier *= 1.25f;
             }
 
@@ -75,13 +75,13 @@ namespace PVCosplay
             dmg.damageDealt = (int)Math.Ceiling(damagenumber * multiplier);
 
 
-            var value = (facingLeft ? 110 : 250);
-            float modifier = (facingLeft ? -1 : 1);
-            clone.transform.rotation = Quaternion.Euler(0, 0, value + (10 * i * modifier));
+            var value = facingLeft ? 110 : 250;
+            float modifier = facingLeft ? -1 : 1;
+            clone.transform.rotation = Quaternion.Euler(0, 0, value + 10 * i * modifier);
             clone.transform.position = new Vector3(HeroController.instance.transform.position.x, HeroController.instance.transform.position.y, 0);
             clone.SetActive(true);
 
-            base.StartCoroutine(Velocity(clone, i,modifier));
+            StartCoroutine(Velocity(clone, i, modifier));
         }
 
         private IEnumerator Velocity(GameObject cloneobject, int i, float modifier)
