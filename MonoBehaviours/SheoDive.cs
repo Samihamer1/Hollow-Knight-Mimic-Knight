@@ -91,7 +91,7 @@ namespace PVCosplay
                 clone.GetComponent<ParticleSystem>().Play();
 
                 BoxCollider2D collider = clone.AddComponent<BoxCollider2D>();
-                collider.size = new Vector2(15, 10);
+                collider.size = new Vector2(6, 10);
                 collider.offset = new Vector2(0, 0);
                 collider.isTrigger = true;
                 collider.enabled = true;
@@ -103,7 +103,7 @@ namespace PVCosplay
                     clone.transform.localScale += new Vector3((float)0.3, (float)0.3);
                 }
 
-                StartCoroutine(Util.ActivateForSecondsD(clone, 0.75f));
+                StartCoroutine(Util.ActivateForSecondsD(clone, 0.5f));
 
                 clone = Instantiate(PVCosplay.ptstompsplash);
                 clone.layer = (int)PhysLayers.HERO_ATTACK;
@@ -111,7 +111,7 @@ namespace PVCosplay
                 clone.GetComponent<ParticleSystem>().Play();
 
                 collider = clone.AddComponent<BoxCollider2D>();
-                collider.size = new Vector2(15, 10);
+                collider.size = new Vector2(8, 5);
                 collider.offset = new Vector2(0, 0);
                 collider.isTrigger = true;
                 collider.enabled = true;
@@ -172,7 +172,7 @@ namespace PVCosplay
             if (HeroController.instance.playerData.equippedCharm_19)
             {
                 clone.transform.localScale += new Vector3((float)0.3, (float)0.3);
-                multiplier *= 1.25f;
+                multiplier *= 1.2f;
             }
 
             dmg.damageDealt = (int)Math.Ceiling(damagenumber * multiplier);

@@ -8,7 +8,7 @@ Shaman Stone increases damage by 1.25x, and increases size by 1.3x.
 Flukenest applies a 0.25x multiplier, but causes it to hit twice, and bypasses invulnerability.
 
 Replaces Descending Dark with Paintmaster Sheo's red paint splatter.
-Each orb does 20 damage.
-Shaman Stone increases damage by 1.25x, and increases size by 1.3x.
+Each orb and shockwave does 20 damage.
+Shaman Stone increases damage by 1.2x, and increases size by 1.3x.
 
 Requires Vasi (I don't know how to set dependencies, but it's needed.)
