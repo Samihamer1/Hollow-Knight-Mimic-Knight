@@ -12,14 +12,14 @@ namespace PVCosplay
     public class Dagger : MonoBehaviour
     {
 
-        float lerpDuration = 2;
+        float lerpDuration = 1.5f;
         float damagenumber = 40;
         bool Left = false;
         GameObject clone;
         FsmState fsm;
         DamageEnemies dmg;
 
-        private IEnumerator Start()
+        private void Start()
         {
             fsm = HeroController.instance.spellControl.GetState("Fireball 2");
             fsm.RemoveAction(3);
@@ -31,7 +31,6 @@ namespace PVCosplay
                     StartCoroutine(CreateDagger(i, Left));
                 }
             });
-            yield return true;
         }
 
         private IEnumerator CreateDagger(int i, bool facingLeft)
