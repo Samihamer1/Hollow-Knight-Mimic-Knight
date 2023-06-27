@@ -13,7 +13,7 @@ namespace PVCosplay
     {
 
         float lerpDuration = 1.5f;
-        float damagenumber = 40;
+        float damagenumber = 30;
         bool Left = false;
         GameObject clone;
         FsmState fsm;

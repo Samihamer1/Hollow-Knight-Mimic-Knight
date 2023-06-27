@@ -113,7 +113,7 @@ namespace PVCosplay
             if (HeroController.instance.playerData.equippedCharm_19)
             {
                 clone.transform.localScale += new Vector3((float)0.3, (float)0.3);
-                multiplier *= 1.25f;
+                multiplier *= 1.5f;
             }
 
             dmg.damageDealt = (int)Math.Ceiling(damagenumber * multiplier);

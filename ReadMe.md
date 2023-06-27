@@ -3,7 +3,7 @@
 I saw the trailer for Pale Court and got a little impatient.
 
 Replaces Shade Soul with the Pure Vessel's soul daggers.
-Daggers do 40 damage, but don't bypass invulnerability.
+Daggers do 30 damage.
 Shaman Stone increases damage by 1.25x, and increases size by 1.3x.
 Flukenest applies a 0.25x multiplier, but causes it to hit twice, and bypasses invulnerability.
 
@@ -16,6 +16,6 @@ Hold no directional input and cast a spell and gain access to a fourth spell typ
 
 Adds Hornet's string attack as a neutral spell.
 Each tick does 20 damage.
-Shaman stone increases damage by 1.25x and increases size by 1.3x.
+Shaman stone increases damage by 1.25x and increases size by 1.5x.
 
 Requires Vasi (I don't know how to set dependencies, but it's needed.)
