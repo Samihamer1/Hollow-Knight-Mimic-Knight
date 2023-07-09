@@ -5,6 +5,7 @@ using HutongGames.PlayMaker.Actions;
 using Modding;
 using Modding.Utils;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using Vasi;
 
 namespace PVCosplay
@@ -12,7 +13,7 @@ namespace PVCosplay
     public class PVCosplay : Mod
     {
         new public string GetName() => "Mimic Knight";
-        public override string GetVersion() => "v1.6";
+        public override string GetVersion() => "v1.7";
 
         //Original spell behavior (shoutout to pronoespro)
         public Dictionary<string, FsmState> divestatetemplate;
@@ -23,8 +24,9 @@ namespace PVCosplay
         public string[] wraithstatenames = new string[] { "Level Check 3", "Scream Antic2", "Scream Burst 2", "End Roar 2", "Scream End 2" };
 
 
-
+        public static bool init;
         public static bool isFacingLeft;
+        float lastinput;
         private static PlayMakerFSM hkfsm;
         public static GameObject dagger;
         public static GameObject paintshotR;
@@ -32,9 +34,11 @@ namespace PVCosplay
         public static GameObject ptstomppillar;
         public static GameObject ptstompsplash;
         public static GameObject adidas;
+        public static GameObject xeroblade;
         public static PlayMakerFSM originalfsm;
         public static PlayMakerFSM sheofsm;
         public static PlayMakerFSM hornetfsm;
+        public static PlayMakerFSM xerofsm;
         public static Dictionary<string, GameObject> preloadedGO = new Dictionary<string, GameObject>();
 
         public override List<(string, string)> GetPreloadNames()
@@ -44,7 +48,8 @@ namespace PVCosplay
                 ("GG_Hollow_Knight","Battle Scene/HK Prime"),
                 ("GG_Hollow_Knight","Battle Scene/Focus Blasts"),
                 ("GG_Painter","Battle Scene/Sheo Boss"),
-                ("GG_Hornet_2","Boss Holder/Hornet Boss 2")
+                ("GG_Hornet_2","Boss Holder/Hornet Boss 2"),
+                ("GG_Ghost_Xero","Warrior/Ghost Warrior Xero")
             };
         }
 
@@ -52,6 +57,7 @@ namespace PVCosplay
         {
             On.HeroController.Awake += new On.HeroController.hook_Awake(this.OnHeroControllerAwake);
             On.HeroController.Move += FindDirection;
+            
 
             //Yknow, at some point, I'm really gonna have to make this less manual.
             GameObject hkprime = preloadedObjects["GG_Hollow_Knight"]["Battle Scene/HK Prime"];
@@ -72,10 +78,15 @@ namespace PVCosplay
             UnityEngine.Object.DontDestroyOnLoad(hornet);
             hornetfsm = hornet.LocateMyFSM("Control");
             adidas = hornet.Child("Sphere Ball");
-            
+
+            GameObject xero = preloadedObjects["GG_Ghost_Xero"]["Warrior/Ghost Warrior Xero"];
+            UnityEngine.Object.DontDestroyOnLoad(xero);
+            xerofsm = xero.LocateMyFSM("Attacking");
+            xeroblade = xero.Child("Sword 3");
 
         }
         
+
         private void FindDirection(On.HeroController.orig_Move orig, HeroController self, float move_direction)
         {
             if (Mathf.Abs(move_direction) > 0)
@@ -111,13 +122,19 @@ namespace PVCosplay
             fireballstatetemplate = SetTemplate(fireballstatetemplate, fireballstatenames);
         }
 
-        private void ResetSpell(Dictionary<string, FsmState> spelltemplate, string[] spelltemplatenames)
+        private void ResetSpell(Dictionary<string, FsmState> spelltemplate, string[] spelltemplatenames, string addon)
         {
             //statetemplates have [string, state] eg. string = "Wraith Antic", state = antic state
             originalfsm = HeroController.instance.spellControl;
             for (int i = 0; i < spelltemplate.Count; i++)
             {
-                FsmState currentstate = originalfsm.GetState(spelltemplatenames[i]);
+                FsmState currentstate;
+                if (!init)
+                {
+                    currentstate = originalfsm.CreateState(spelltemplatenames[i] + addon);
+                }
+                currentstate = originalfsm.GetState(spelltemplatenames[i] + addon);
+
                 FsmState templatestate = spelltemplate[spelltemplatenames[i]];
                 //Complete obliteration of actions.
                 for (int j = 0; j < currentstate.Actions.Length; j++)
@@ -132,23 +149,135 @@ namespace PVCosplay
                 }
 
             };
+
+            for (int i = 0; i < spelltemplate.Count; i++)
+            {
+                FsmState currentstate;
+                if (!init)
+                {
+                    currentstate = originalfsm.GetState(spelltemplatenames[i] + addon);
+                    FsmTransition[] transitions = spelltemplate[spelltemplatenames[i]].Transitions;
+                    for (int x = 0; x < transitions.Length; x++)
+                    {
+                        if (transitions[x].ToState == "" || transitions[x].ToState == "Spell End")
+                        {
+                            currentstate.AddTransition(transitions[x].EventName, transitions[x].ToState);
+                        }
+                        else
+                        {
+                            currentstate.AddTransition(transitions[x].EventName, transitions[x].ToState + addon);
+                        }
+                    }
+                }
+
+            };
+
         }
 
         private void ResetSpellControl()
         {
-            ResetSpell(fireballstatetemplate, fireballstatenames);
-            ResetSpell(wraithstatetemplate, wraithstatenames);
-            ResetSpell(divestatetemplate, divestatenames);
+            ResetSpell(fireballstatetemplate, fireballstatenames,"C");
+            ResetSpell(fireballstatetemplate, fireballstatenames, "N");
+            ResetSpell(wraithstatetemplate, wraithstatenames,"C");
+            ResetSpell(divestatetemplate, divestatenames,"C");
+            if (!init)
+            {
+                CreateNeutralSpell();
+            }
+            init = true;
+        }
 
+        private void CreateNeutralSpell()
+        {
+            //Neutral Check state.
+            FsmState neutralstate = HeroController.instance.spellControl.CreateState("Neutral Check");
+            FsmEvent event1 = new FsmEvent("ALTERNATE");
+            FsmEvent event2 = new FsmEvent("REGULAR");
+            IntCompare newaction = new IntCompare();
+            newaction.integer1 = (FsmInt)lastinput;
+            newaction.integer2 = 0;
+            newaction.equal = event1;
+            newaction.lessThan = event2;
+            newaction.greaterThan = event2;
+            newaction.everyFrame = false;
+            neutralstate.AddTransition("ALTERNATE", "Fireball AnticN");
+            neutralstate.AddTransition("REGULAR", "Fireball Antic");
+            neutralstate.AddAction(newaction);
+
+            HeroController.instance.spellControl.ChangeTransition("Wallside?", "FINISHED", "Neutral Check");
+
+            //setup the lastinput val
+            FsmState fsm = HeroController.instance.spellControl.GetState("Wallside?");
+            fsm.InsertMethod(1, () =>
+            {
+                lastinput = HeroController.instance.move_input;
+                FsmState neutralstate = HeroController.instance.spellControl.GetState("Neutral Check");
+                neutralstate.GetAction<IntCompare>().integer1 = (FsmInt)lastinput;
+            });
+        }
+        private void DirectionalCustomToggle(bool val)
+        {
+            if (val)
+            {
+                HeroController.instance.spellControl.ChangeTransition("Neutral Check", "REGULAR", "Fireball AnticC");
+            }
+            else
+            {
+                HeroController.instance.spellControl.ChangeTransition("Neutral Check", "REGULAR", "Fireball Antic");
+            }
+        }
+
+        private void UpCustomToggle(bool val)
+        {
+            if (val)
+            {
+                HeroController.instance.spellControl.ChangeTransition("Scream Get?", "FINISHED", "Level Check 3C");
+            }
+            else
+            {
+                HeroController.instance.spellControl.ChangeTransition("Scream Get?", "FINISHED", "Level Check 3");
+            }
+        }
+
+        private void DownCustomToggle(bool val)
+        {
+            if (val)
+            {
+                HeroController.instance.spellControl.ChangeTransition("Q On Ground", "FINISHED", "Quake AnticC");
+                HeroController.instance.spellControl.ChangeTransition("Q Off Ground", "FINISHED", "Quake AnticC");
+            }
+            else
+            {
+                HeroController.instance.spellControl.ChangeTransition("Q On Ground", "FINISHED", "Quake Antic");
+                HeroController.instance.spellControl.ChangeTransition("Q Off Ground", "FINISHED", "Quake Antic");
+            }
+        }
+        private void NeutralCustomToggle(bool val)
+        {
+            if (val)
+            {
+                FsmState neutralstate = HeroController.instance.spellControl.GetState("Neutral Check");
+                
+            } else
+            {
+
+            }
         }
 
         private void OnHeroControllerAwake(On.HeroController.orig_Awake orig, HeroController self)
         {
             orig.Invoke(self);
             TemplateInit();
+            ResetSpellControl();
             self.gameObject.GetOrAddComponent<Dagger>();
             self.gameObject.GetOrAddComponent<SheoDive>();
+            self.gameObject.GetOrAddComponent<XeroBlades>();
             self.gameObject.GetOrAddComponent<Adidas>();
+            //test
+            DirectionalCustomToggle(true);
+            UpCustomToggle(true);
+            
+            
         }
     }
 }

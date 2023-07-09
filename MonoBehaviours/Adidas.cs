@@ -7,6 +7,7 @@ using HutongGames.PlayMaker;
 using Vasi;
 using System;
 using UnityEngine.Rendering;
+using Modding;
 
 namespace PVCosplay
 {
@@ -17,86 +18,100 @@ namespace PVCosplay
         FsmState fsm;
         float lastinput;
         DamageEnemies dmg;
+        bool healtheffect;
+        float lastadidas = Time.time;
 
         private void Start()
         {   
-            //Adidas state. A copy of the (original) Fireball2 state.
-            FsmState adidasstate = HeroController.instance.spellControl.CreateState("Adidas");
-            FsmState originalfireball2 = PVCosplay.fireballstatetemplate["Fireball 2"];
-            for (int j = 0; j < originalfireball2.Actions.Length; j++)
-            {
-                adidasstate.InsertAction(j, originalfireball2.Actions[j]);
-            }
-
-            //Neutral Check state.
-            FsmState neutralstate = HeroController.instance.spellControl.CreateState("Neutral Check");
-            FsmEvent event1 = new FsmEvent("ALTERNATE");
-            FsmEvent event2 = new FsmEvent("REGULAR");
-            IntCompare newaction = new IntCompare();
-            newaction.integer1 = (FsmInt)lastinput;
-            newaction.integer2 = 0;
-            newaction.equal = event1;
-            newaction.lessThan = event2;
-            newaction.greaterThan = event2;
-            newaction.everyFrame = false;
-            neutralstate.AddTransition("ALTERNATE", "Adidas");
-            neutralstate.AddTransition("REGULAR", "Fireball 2");
-            neutralstate.AddAction(newaction);
-
-            //Hijack Level Check.
-            fsm = HeroController.instance.spellControl.GetState("Level Check");
-            fsm.ChangeTransition("LEVEL 2", "Neutral Check");
-
-            //Hijack the Antic
-            fsm = HeroController.instance.spellControl.GetState("Fireball Antic");
-            fsm.InsertMethod(1, () =>
-            {
-                lastinput = HeroController.instance.move_input;
-                FsmState neutralstate = HeroController.instance.spellControl.GetState("Neutral Check");
-                neutralstate.GetAction<IntCompare>().integer1 = (FsmInt)lastinput;
-            });
-
             //Adidas State linking
-            fsm = HeroController.instance.spellControl.GetState("Adidas");
+            fsm = HeroController.instance.spellControl.GetState("Fireball 2N");
+            FsmOwnerDefault owner = fsm.GetAction<Tk2dPlayAnimationWithEvents>().gameObject;
+            fsm.RemoveAction(4);
             fsm.RemoveAction(3);
-            fsm.InsertMethod(3,() =>
+            fsm.RemoveAction(0);
+            fsm.AddMethod(() =>
             {
-                //Attempt to add the neutral spell.
+                //Activate the health effect (and its off button)
+                healtheffect = true;
+                lastadidas = Time.time;
+                StartCoroutine(disableEffect(lastadidas));
+                //Create slash.
                 CreateAdidas();
             });
-            fsm.GetAction<Tk2dPlayAnimationWithEvents>().clipName = "Collect Magical 2";
+            //fsm.GetAction<Tk2dPlayAnimationWithEvents>().clipName = "Collect Magical 2";
+
+            Tk2dPlayAnimationV2 animationaction = new Tk2dPlayAnimationV2
+            {
+                clipName = "Collect Magical 2",
+                gameObject = owner
+            };
+
             AudioPlaySimple audioaction = new AudioPlaySimple();
-            audioaction.gameObject = fsm.GetAction<Tk2dPlayAnimationWithEvents>().gameObject;
+            audioaction.gameObject = owner;
             audioaction.volume = 1f;
             audioaction.oneShotClip = PVCosplay.hornetfsm.GetAction<AudioPlaySimple>("Sphere", 5).oneShotClip;
+
             SetVelocity2d velocityaction = new SetVelocity2d();
-            velocityaction.gameObject = fsm.GetAction<Tk2dPlayAnimationWithEvents>().gameObject;
+            velocityaction.gameObject = owner;
             velocityaction.vector = new Vector2(0, 0);
             velocityaction.y = 0f;
             velocityaction.x = 0f;
             velocityaction.everyFrame = true;
-            Wait waitaction = new Wait();
-            waitaction.time = 0.75f;
-            waitaction.realTime = false;
-            SendEventByName eventaction = new SendEventByName();
-            eventaction.eventTarget = fsm.GetAction<SendEventByName>().eventTarget;
-            eventaction.sendEvent = new FsmString("FINISHED");
-            eventaction.delay = 0f;
+
+            SendEventByNameV2 eventaction = new SendEventByNameV2();
+            eventaction.delay = 0.75f;
+            eventaction.sendEvent = "FINISHEDN";
             eventaction.everyFrame = false;
-            fsm.GetAction<SendEventByName>(4).delay = 0.75f;
-            fsm.InsertAction(4,velocityaction);
-            fsm.InsertAction(1, audioaction);
+            eventaction.eventTarget = HeroController.instance.spellControl.Fsm.EventTarget;
+
+            Wait waitaction = new Wait
+            {
+                time = 0.75f,
+                finishEvent = new FsmEvent("FINISHEDN"),
+                realTime = false
+            };
+
+            fsm.AddAction(velocityaction);
+            fsm.AddAction(audioaction);
+            fsm.AddAction(animationaction);
+            fsm.AddAction(waitaction);
+            fsm.AddAction(eventaction);
+
             fsm.RemoveTransition("FINISHED");
-            fsm.AddTransition("FINISHED", "Spell End");
+            fsm.AddTransition("FINISHEDN", "Spell End");
+
+
+            //While in state, -1 damage.
+            ModHooks.TakeHealthHook += DamageEvents;
+
         }
 
+        private int DamageEvents(int damage)
+        {        
+            if (healtheffect)
+            {
+                damage -= 1;
+                healtheffect = false;
+            }
+            return damage;
+        }
+
+        private IEnumerator disableEffect(float currentadidas)
+        {
+            yield return new WaitForSeconds(0.75f);
+            if (lastadidas == currentadidas)
+            {
+                healtheffect = false;
+            }
+        }
         private void CreateAdidas()
         {
             clone = Instantiate(PVCosplay.adidas);
+            
             Destroy(clone.GetComponent<DamageHero>());
-
+            
             clone.layer = (int)PhysLayers.HERO_ATTACK;
-
+            
             dmg = clone.GetOrAddComponent<DamageEnemies>();
             dmg.damageDealt = 15;
             dmg.attackType = AttackTypes.Spell;
@@ -121,9 +136,13 @@ namespace PVCosplay
 
             clone.transform.position = new Vector3(HeroController.instance.transform.position.x, HeroController.instance.transform.position.y, 0);
 
-            StartCoroutine(Util.DelayedActivateForSecondsD(clone,0.25f, 0.5f));
+            StartCoroutine(Util.WhileInState("Fireball 2N",clone));
         }      
 
+        private void OnDisable()
+        {
+            ModHooks.TakeHealthHook -= DamageEvents;
+        }
 
     }
 }

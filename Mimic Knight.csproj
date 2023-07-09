@@ -8,11 +8,11 @@
     <!--<DocumentationFile>$(OutputPath)/$(AssemblyTitle).xml</DocumentationFile>-->
   </PropertyGroup>
   <PropertyGroup>
-    <RootNamespace>Hollow_Knight_1._5_Mod1</RootNamespace>
-    <AssemblyName>Hollow_Knight_1._5_Mod1</AssemblyName>
+    <RootNamespace>PVCosplay</RootNamespace>
+    <AssemblyName>PVCosplay</AssemblyName>
     <TargetFramework>net472</TargetFramework>
-    <AssemblyTitle>Hollow_Knight_1._5_Mod1</AssemblyTitle>
-    <Product>Hollow_Knight_1._5_Mod1</Product>
+    <AssemblyTitle>PVCosplay</AssemblyTitle>
+    <Product>PVCosplay</Product>
     <Description>A Hollow Knight Mod</Description>
     <Copyright>Copyright ©  2023</Copyright>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>

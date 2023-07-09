@@ -43,8 +43,13 @@ namespace PVCosplay
             {
                 HeroController.instance.spellControl.SendEvent("ANIM END");
             });
-                
 
+            AudioPlaySimple audioaction = new AudioPlaySimple();
+            audioaction.gameObject = anticstate.GetAction<AudioPlay>().gameObject;
+            audioaction.volume = 1f;
+            audioaction.oneShotClip = PVCosplay.sheofsm.GetAction<AudioPlayerOneShotSingle>("JumpSlash1", 3).audioClip;
+
+            newstate.AddAction(audioaction);
             newstate.AddMethod(() =>
             {
                 tk2dSpriteAnimator animator = HeroController.instance.GetComponent<tk2dSpriteAnimator>();
@@ -58,6 +63,7 @@ namespace PVCosplay
                 {
                     CreatePaintR(i);
                 }
+
                 animator.PlayAnimWait("DownSlash");
 
                 Invoke("TransitionControl", 0.4f);
@@ -138,7 +144,6 @@ namespace PVCosplay
            yield return true;
 
             
-            //LOOK INTO THE WAIT ACTION!!!!! ITS IN Q2 LAND
         }
 
 

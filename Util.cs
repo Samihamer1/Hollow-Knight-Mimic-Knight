@@ -1,6 +1,7 @@
-﻿using System.Collections;
+﻿using HutongGames.PlayMaker;
+using System.Collections;
 using UnityEngine;
-
+using Vasi;
 
 namespace PVCosplay
 {
@@ -24,6 +25,13 @@ namespace PVCosplay
             yield return new WaitForSeconds(delaytime);
             obj.SetActive(true);
             yield return new WaitForSeconds(time);
+            UnityEngine.Object.Destroy(obj);
+        }
+
+        public static IEnumerator WhileInState(string state, GameObject obj)
+        {
+            obj.SetActive(true);
+            yield return new WaitWhile(() => state == HeroController.instance.spellControl.ActiveStateName);
             UnityEngine.Object.Destroy(obj);
         }
     }

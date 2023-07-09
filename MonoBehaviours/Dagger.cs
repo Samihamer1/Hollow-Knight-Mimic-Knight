@@ -21,7 +21,8 @@ namespace PVCosplay
 
         private void Start()
         {
-            fsm = HeroController.instance.spellControl.GetState("Fireball 2");
+            fsm = HeroController.instance.spellControl.GetState("Fireball 2C");
+            fsm.GetAction<SendEventByName>(4).delay = 0f;
             fsm.RemoveAction(3);
             fsm.InsertMethod(3, () =>
             {

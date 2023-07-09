@@ -10,7 +10,7 @@ namespace PVCosplay
 {
     public class PaintSplash: MonoBehaviour
     {
-        int damagenumber = 20;
+        int damagenumber = 25;
         public void OnTriggerStay2D(Collider2D collider)
         {
             if (collider.gameObject.GetComponent<HealthManager>() != null || collider.gameObject.GetComponentInChildren<HealthManager>() != null || collider.GetComponentInParent<HealthManager>() != null)
